@@ -3,24 +3,29 @@
 $company_id = null;
 $car_id = null;
 $section_id = null;
+$model = null;
 $title = "";
 
-if (isset($_GET['company_id'])) {
+if (isset($_GET['company_id']) && !empty($_GET['company_id'])) {
     $company_id = $_GET['company_id'];
 }
-if (isset($_GET['car_id'])) {
+if (isset($_GET['car_id']) && !empty($_GET['car_id'])) {
     $car_id = $_GET['car_id'];
     $cars = select("SELECT Id, Name FROM CARS WHERE Id= $car_id");
     $title .=  $cars[0]["Name"];
 } else {
     $cars = select("SELECT Id, Name FROM CARS");
 }
-if (isset($_GET['section_id'])) {
+if (isset($_GET['section_id']) && !empty($_GET['section_id'])) {
     $section_id = $_GET['section_id'];
     $sections = select("SELECT Id, Name FROM SECTIONS WHERE Id=$section_id");
     $title .= " - " . $sections[0]["Name"];
 } else {
     $sections = select("SELECT Id, Name FROM CARS");
+}
+
+if (isset($_GET['model']) && !empty($_GET['model'])) {
+    $model = $_GET['model'];
 }
 
 $modelsQuery = "SELECT MIN(modelFrom) as low, MAX(modelTo) as heigh FROM PIECES where condition =1";
@@ -38,6 +43,11 @@ if (!is_null($section_id)) {
     $query .= " AND id_section=$section_id";
     $modelsQuery .= " AND id_section=$section_id";
 }
+if (!is_null($model) && !empty($model)) {
+    $query .= " AND ( modelFrom <= $model AND modelTo >= $model )";
+}
+// var_dump( $query );
+// exit;
 $all = select($query);
 $minAndMax = select($modelsQuery);
 
@@ -54,7 +64,7 @@ $minAndMax = select($modelsQuery);
 <body>
 
     <?php include("template/navbar.php"); ?>
-    <input type="radio" name="photos" id="check1" checked>
+    <!-- <input type="radio" name="photos" id="check1" checked> -->
     <?php
     $c = 1;
     for ($i = $minAndMax[0]['low']; $i <= $minAndMax[0]['heigh']; $i++) {
@@ -95,12 +105,21 @@ $minAndMax = select($modelsQuery);
         -->
         <div class="top-content">
             <h4>إختر موديل سيارتك : </h4>
-            <label for="check1">كل الموديلات </label>
+            <label>
+                <a href="pises.php?company_id=<?php echo $company_id; ?>&car_id=<?php echo $car_id; ?>&section_id=<?php echo $section_id; ?>&model=">
+                    الكل 
+                </a>
+            </label>
             <?php
             $c = 1;
             for ($i = $minAndMax[0]['low']; $i <= $minAndMax[0]['heigh']; $i++) {
             ?>
-                <label for="check<?php echo ++$c; ?>"> <?php echo $i; ?></label>
+                <label> 
+                    <a href="pises.php?company_id=<?php echo $company_id; ?>&car_id=<?php echo $car_id; ?>&section_id=<?php echo $section_id; ?>&model=<?php echo $i; ?>">
+                        <?php echo $i; ?>
+                    </a>
+                
+            </label>
             <?php } ?>
             <!-- <label for="check1">كل الموديلات </label>
             <label for="check2"> 2018</label>
